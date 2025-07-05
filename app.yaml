@@ -1,0 +1,24 @@
+name: chatmind-pro-api
+services:
+- name: web
+  source_dir: /
+  github:
+    repo: your-username/chatmind-pro-api
+    branch: main
+  run_command: gunicorn --worker-tmp-dir /dev/shm --bind=0.0.0.0:8080 main:app
+  environment_slug: python
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  http_port: 8080
+  routes:
+  - path: /
+  health_check:
+    http_path: /api/v1/status
+  envs:
+  - key: OPENROUTER_API_KEY
+    scope: RUN_TIME
+    type: SECRET
+  - key: SESSION_SECRET
+    scope: RUN_TIME
+    type: SECRET
+    value: your-random-secret-key-here

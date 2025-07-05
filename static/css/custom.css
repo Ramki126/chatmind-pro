@@ -1,0 +1,233 @@
+/* Custom styles for the chatbot application */
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    background-color: var(--bs-gray-900);
+    border-radius: 0.5rem;
+}
+
+.message {
+    margin-bottom: 1rem;
+    animation: fadeIn 0.3s ease-in;
+}
+
+.message.user {
+    text-align: right;
+}
+
+.message.ai {
+    text-align: left;
+}
+
+.message-bubble {
+    display: inline-block;
+    padding: 0.75rem 1rem;
+    border-radius: 1rem;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.message.user .message-bubble {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+.message.ai .message-bubble {
+    background-color: var(--bs-gray-800);
+    color: var(--bs-gray-100);
+    border: 1px solid var(--bs-gray-700);
+}
+
+.message.system {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+}
+
+.message.system .message-bubble {
+    background-color: var(--bs-success-bg-subtle, #d1e7dd);
+    color: var(--bs-success-text-emphasis, #0f5132);
+    border: 1px solid var(--bs-success-border-subtle, #a3cfbb);
+    font-size: 0.9em;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 400px;
+}
+
+/* Test Case Management Styles */
+.test-case-item {
+    transition: all 0.2s ease;
+}
+
+.test-case-item:hover {
+    background-color: var(--bs-tertiary-bg, #2b3035) !important;
+    border-color: var(--bs-primary-border-subtle, #0d6efd) !important;
+}
+
+#testCasesList {
+    background-color: var(--bs-body-bg);
+    border-color: var(--bs-border-color);
+}
+
+.test-case-item {
+    background-color: var(--bs-secondary-bg) !important;
+    border-color: var(--bs-border-color) !important;
+    color: var(--bs-body-color) !important;
+}
+
+.test-case-item .text-muted {
+    color: var(--bs-secondary-color) !important;
+}
+
+.test-case-item .btn-outline-danger:hover {
+    transform: scale(1.1);
+}
+
+.message-time {
+    font-size: 0.75rem;
+    color: var(--bs-gray-500);
+    margin-top: 0.25rem;
+}
+
+.message-meta {
+    font-size: 0.7rem;
+    color: var(--bs-gray-600);
+    margin-top: 0.25rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading states */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.typing-indicator .message-bubble {
+    background-color: var(--bs-gray-800);
+    padding: 1rem;
+}
+
+.typing-dots {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.typing-dots span {
+    height: 8px;
+    width: 8px;
+    background-color: var(--bs-gray-500);
+    border-radius: 50%;
+    animation: typingAnimation 1.4s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) {
+    animation-delay: -0.32s;
+}
+
+.typing-dots span:nth-child(2) {
+    animation-delay: -0.16s;
+}
+
+@keyframes typingAnimation {
+    0%, 80%, 100% {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* QA Dashboard specific styles */
+.test-result {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.test-result:hover {
+    border-color: var(--bs-primary);
+}
+
+.test-result.success {
+    border-left: 4px solid var(--bs-success);
+}
+
+.test-result.error {
+    border-left: 4px solid var(--bs-danger);
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.metric-card {
+    background-color: var(--bs-gray-900);
+    border: 1px solid var(--bs-gray-700);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--bs-primary);
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    color: var(--bs-gray-400);
+    margin-top: 0.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .message-bubble {
+        max-width: 90%;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Custom scrollbar */
+.chat-messages::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+    background: var(--bs-gray-800);
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+    background: var(--bs-gray-600);
+    border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-gray-500);
+}

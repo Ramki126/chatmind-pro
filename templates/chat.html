@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Chat - ChatMind Pro{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Model Selection -->
+            <div class="card mb-3">
+                <div class="card-body py-2">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <label for="chatModelSelect" class="form-label mb-1">
+                                <i class="fas fa-robot me-2"></i>AI Model
+                            </label>
+                            <select class="form-select form-select-sm" id="chatModelSelect">
+                                <option value="mistral">Mistral 7B Instruct (Free)</option>
+                                <option value="gpt4o">GPT-4o Mini</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">
+                                Current: <strong id="chatModelName">Mistral 7B Instruct</strong> by <span id="chatModelProvider">Mistral AI</span>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Header -->
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>Smart Conversation
+                    </h5>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="clearHistoryBtn">
+                        <i class="fas fa-trash me-1"></i>Clear History
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Container -->
+            <div class="card">
+                <div class="card-body p-0">
+                    <!-- Chat Messages -->
+                    <div id="chatMessages" class="chat-messages p-3" style="height: 500px; overflow-y: auto;">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-comments fa-3x mb-3"></i>
+                            <p>Start an intelligent conversation!</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div class="border-top p-3">
+                        <form id="chatForm">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="messageInput" 
+                                       placeholder="Type your message..." autocomplete="off" required>
+                                <button class="btn btn-primary" type="submit" id="sendBtn">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Status -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="border-end">
+                                <h6 class="text-muted mb-1">Model</h6>
+                                <small id="statusModelName">Mistral 7B Instruct</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border-end">
+                                <h6 class="text-muted mb-1">Status</h6>
+                                <span id="apiStatus" class="badge bg-secondary">Ready</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-1">Response Time</h6>
+                            <span id="responseTime">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mb-0">AI is thinking...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

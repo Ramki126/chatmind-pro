@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block title %}QA Dashboard - ChatMind Pro{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <!-- Test Configuration -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-vial me-2"></i>Model Testing
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="testForm">
+                        <!-- Model Selection -->
+                        <div class="mb-4">
+                            <label for="modelSelect" class="form-label">
+                                <i class="fas fa-robot me-2"></i>AI Model Selection
+                            </label>
+                            <select class="form-select" id="modelSelect">
+                                <option value="mistral">Mistral 7B Instruct (Free)</option>
+                                <option value="gpt4o">GPT-4o Mini</option>
+                            </select>
+                            <div class="form-text">
+                                <span id="currentModelInfo">Current: <strong id="modelName">Mistral 7B Instruct</strong> by <span id="modelProvider">Mistral AI</span></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Question and Expected Result Input -->
+                        <div class="mb-4">
+                            <h6 class="mb-3"><i class="fas fa-plus-circle me-2"></i>Add Test Case</h6>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <label for="questionInput" class="form-label">Question</label>
+                                    <textarea class="form-control" id="questionInput" rows="2" 
+                                              placeholder="Enter your test question here..."></textarea>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="expectedInput" class="form-label">
+                                        Expected Result 
+                                        <small class="text-muted">(Optional)</small>
+                                    </label>
+                                    <textarea class="form-control" id="expectedInput" rows="2" 
+                                              placeholder="Expected answer for ground truth evaluation..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-outline-primary btn-sm me-2" id="addTestCaseBtn">
+                                    <i class="fas fa-plus me-1"></i>Add Test Case
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm me-2" id="clearAllBtn">
+                                    <i class="fas fa-trash me-1"></i>Clear All
+                                </button>
+                                <button type="button" class="btn btn-outline-info btn-sm" id="uploadCsvBtn">
+                                    <i class="fas fa-upload me-1"></i>Upload CSV
+                                </button>
+                            </div>
+                            
+                            <!-- CSV Upload Section -->
+                            <div class="mb-3 collapse" id="csvUploadSection">
+                                <div class="card bg-light border">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="fas fa-file-csv me-2"></i>Bulk Import Test Cases
+                                        </h6>
+                                        <p class="small text-muted mb-3">
+                                            Upload a CSV file with columns: <code>question</code> and <code>expected</code> (optional)
+                                        </p>
+                                        <input type="file" class="form-control mb-3" id="csvFileInput" accept=".csv" />
+                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-sm btn-success" id="processCsvBtn">
+                                                <i class="fas fa-check me-1"></i>Import
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-secondary" id="cancelCsvBtn">
+                                                Cancel
+                                            </button>
+                                            <a href="#" class="btn btn-sm btn-outline-info ms-auto" id="downloadTemplateBtn">
+                                                <i class="fas fa-download me-1"></i>Download Template
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Ground Truth Explanation -->
+                        <div class="mb-3">
+                            <div class="card bg-info bg-opacity-10 border-info">
+                                <div class="card-body py-2">
+                                    <h6 class="card-title mb-2">
+                                        <i class="fas fa-info-circle me-2"></i>How Ground Truth Evaluation Works
+                                    </h6>
+                                    <div class="small">
+                                        <strong>With Expected Answer:</strong> Compares keywords between AI response and your expected answer. Requires 70% word overlap to pass.<br>
+                                        <strong>Without Expected Answer:</strong> Uses quality indicators like response length, coherence, and confidence markers.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Test Cases List -->
+                        <div class="mb-3">
+                            <label for="testCases" class="form-label">Test Cases Queue</label>
+                            <div id="testCasesList" class="border rounded p-3 mb-2" style="min-height: 200px; max-height: 300px; overflow-y: auto;">
+                                <div class="text-muted text-center py-4">
+                                    <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                                    <p>No test cases added yet. Use the form above to add questions.</p>
+                                </div>
+                            </div>
+                            <textarea class="form-control d-none" id="testCases" rows="1"></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Test Options</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="includeMetrics" checked>
+                                <label class="form-check-label" for="includeMetrics">
+                                    Include detailed metrics
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="saveResults" checked>
+                                <label class="form-check-label" for="saveResults">
+                                    Save results for comparison
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100" id="runTestBtn">
+                            <i class="fas fa-play me-2"></i>Run Tests
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results -->
+        <div class="col-lg-6">
+            <!-- Evaluation Criteria Reference -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-book me-2"></i>Evaluation Criteria Reference
+                        <button class="btn btn-sm btn-outline-secondary ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#criteriaDetails">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </h6>
+                </div>
+                <div class="collapse" id="criteriaDetails">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-success">
+                                    <i class="fas fa-check-circle me-2"></i>Ground Truth Evaluation
+                                </h6>
+                                <div class="small mb-3">
+                                    <strong>Used when:</strong> Expected answer provided<br>
+                                    <strong>Pass:</strong> ≥70% word overlap<br>
+                                    <strong>Fail:</strong> &lt;70% word overlap<br>
+                                    <strong>Method:</strong> Keyword matching between expected and actual response
+                                </div>
+                                
+                                <h6 class="text-info">
+                                    <i class="fas fa-cogs me-2"></i>Quality Score Breakdown
+                                </h6>
+                                <div class="small">
+                                    <strong>Relevance (0-30pts):</strong> Question type matching, keyword overlap<br>
+                                    <strong>Content (0-25pts):</strong> No errors, informative indicators<br>
+                                    <strong>Completeness (0-20pts):</strong> Response length and word count<br>
+                                    <strong>Language (0-25pts):</strong> Confidence, structure, diversity
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-secondary">
+                                    <i class="fas fa-calculator me-2"></i>Heuristic Evaluation
+                                </h6>
+                                <div class="small mb-3">
+                                    <strong>Used when:</strong> No expected answer<br>
+                                    <strong>Pass:</strong> Usually 60-70+ quality score<br>
+                                    <strong>Fail:</strong> Low quality indicators<br>
+                                    <strong>Method:</strong> Multi-factor quality assessment
+                                </div>
+                                
+                                <h6 class="text-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>Common Fail Reasons
+                                </h6>
+                                <div class="small">
+                                    • <strong>Ground Truth:</strong> Word mismatch &lt;70%<br>
+                                    • <strong>Content:</strong> Error messages, "don't know"<br>
+                                    • <strong>Length:</strong> Too short (&lt;20 chars)<br>
+                                    • <strong>Relevance:</strong> Off-topic responses
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Test Results Card -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>Test Results
+                    </h5>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="exportResultsBtn" disabled>
+                        <i class="fas fa-download me-1"></i>Export
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="resultsContainer">
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-play-circle fa-3x mb-3"></i>
+                            <p>Run tests to see results here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Results Section -->
+    <div class="row mt-4" id="detailedResultsSection" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list-alt me-2"></i>Detailed Test Results
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="detailedResults"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evaluation Logic Explanation -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Evaluation Logic & Trustworthiness
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">📊 Scoring Methodology</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Relevance (30 pts):</strong> Question-answer alignment, keyword overlap</li>
+                                <li><strong>Content Quality (25 pts):</strong> Ground truth comparison OR heuristic assessment</li>
+                                <li><strong>Completeness (20 pts):</strong> Response depth and thoroughness</li>
+                                <li><strong>Linguistic Quality (15 pts):</strong> Language complexity balance</li>
+                                <li><strong>Efficiency (10 pts):</strong> Response speed performance</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-warning">⚠️ Evaluation Limitations</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Without Ground Truth:</strong> Uses heuristic patterns, not factual accuracy</li>
+                                <li><strong>Surface-level Analysis:</strong> Cannot verify complex reasoning or facts</li>
+                                <li><strong>Domain Agnostic:</strong> Same metrics for all question types</li>
+                                <li><strong>Recommendation:</strong> Provide expected answers for better evaluation</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <h6><i class="fas fa-lightbulb me-2"></i>Best Practices for Reliable Evaluation:</h6>
+                        <ol class="mb-0">
+                            <li>Include expected answers using "Question|Expected Answer" format</li>
+                            <li>Test diverse question types (factual, reasoning, creative)</li>
+                            <li>Use domain experts to validate results</li>
+                            <li>Compare multiple models with same test cases</li>
+                            <li>Consider metrics holistically, not individual scores</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Testing Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-code me-2"></i>API Testing
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Test Endpoint</h6>
+                            <div class="bg-dark p-3 rounded mb-3">
+                                <code class="text-light">POST /api/test</code>
+                            </div>
+                            
+                            <h6>Sample Request</h6>
+                            <div class="bg-dark p-3 rounded">
+                                <pre class="text-light mb-0"><code>{
+  "test_cases": [
+    {
+      "input": "What is AI?",
+      "expected_output": "Artificial Intelligence explanation"
+    }
+  ]
+}</code></pre>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Response Format</h6>
+                            <div class="bg-dark p-3 rounded">
+                                <pre class="text-light mb-0"><code>{
+  "success": true,
+  "results": [
+    {
+      "test_id": 0,
+      "success": true,
+      "input": "What is AI?",
+      "output": "AI response...",
+      "response_time": 1.23,
+      "metrics": {
+        "quality_score": 85,
+        "word_count": 45,
+        "response_length": 234
+      }
+    }
+  ],
+  "summary": {
+    "total_tests": 1,
+    "successful_tests": 1,
+    "success_rate": 100,
+    "avg_response_time": 1.23,
+    "avg_quality_score": 85
+  }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Test Progress Modal -->
+<div class="modal fade" id="testProgressModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Running Tests</h5>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <div class="progress mb-3">
+                    <div class="progress-bar" role="progressbar" style="width: 0%" id="testProgress"></div>
+                </div>
+                <p class="text-center mb-0" id="testProgressText">Preparing tests...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/qa.js') }}"></script>
+{% endblock %}
