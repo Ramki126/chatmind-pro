@@ -71,11 +71,11 @@ class ChatbotService:
         """Send message to AI model via appropriate API"""
         api_config = self.get_api_config()
         
-        if not api_config["api_key"]:
-            error_msg = api_config.get("error", "API key not configured")
+        # Enhanced error checking for deployment
+        if not api_config["api_key"] or api_config["api_key"].strip() == "":
             return {
                 "success": False,
-                "error": error_msg,
+                "error": "No auth credentials found - OpenRouter API key not configured in environment variables",
                 "response": None,
                 "response_time": 0
             }
@@ -645,6 +645,23 @@ def external_status_api():
             "error": "Service unavailable",
             "code": "SERVICE_ERROR"
         }), 500
+
+@app.route('/debug/env')
+def debug_env():
+    """Debug environment variables (without exposing actual values)"""
+    openrouter_key = os.getenv("OPENROUTER_API_KEY", "")
+    session_secret = os.getenv("SESSION_SECRET", "")
+    
+    return jsonify({
+        "openrouter_key_exists": bool(openrouter_key),
+        "openrouter_key_length": len(openrouter_key) if openrouter_key else 0,
+        "openrouter_key_format": openrouter_key[:8] + "..." if len(openrouter_key) > 8 else "missing",
+        "session_secret_exists": bool(session_secret),
+        "session_secret_length": len(session_secret) if session_secret else 0,
+        "environment": os.getenv("FLASK_ENV", "production"),
+        "debug_mode": app.debug,
+        "all_env_vars": [key for key in os.environ.keys() if not key.startswith("_")]
+    })
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

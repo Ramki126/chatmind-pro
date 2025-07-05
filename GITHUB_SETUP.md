@@ -58,8 +58,16 @@
 3. **Connect local repository to GitHub:**
    ```bash
    git remote add origin https://github.com/yourusername/chatmind-pro.git
+   
+   # Check current branch name
+   git branch
+   
+   # If you see "master", rename it to "main"
    git branch -M main
    git push -u origin main
+   
+   # Alternative: If you want to keep "master" branch
+   # git push -u origin master
    ```
 
 ### Step 4: Environment Setup
